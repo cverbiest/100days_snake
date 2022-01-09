@@ -3,7 +3,7 @@ from turtle import Turtle, Screen
 class Snake:
     direction: int = 0
     snake_parts: list[Turtle] = []
-    grow: bool = False
+    grow: int = 0
     pauzed: bool = False
 
     def color_part(self, nt, i):
@@ -59,23 +59,24 @@ class Snake:
                 pos[1] + move_matrix[self.direction][1]
             )
 
-        if self.grow:
+        if self.grow > 0:
             nt = self.snake_parts[0].clone()
             nt.forward(20)
             # demote old head
             self.color_part(self.snake_parts[0], 1)
             # add new head
             self.snake_parts.insert(0, nt)
-            self.grow = False
+            self.grow -= 1
         else:
             for i in range(len(self.snake_parts) - 1, 0, -1):
                 self.snake_parts[i].goto(self.snake_parts[i - 1].pos())
             self.snake_parts[0].forward(20)
 
+    @property
     def snake_bites_tail(self) -> bool:
         for tail_part in self.snake_parts[1::]:
-            if tail_part.pos() == self.snake_parts[0].pos():
-                tail_part.color("red")
+            if round(tail_part.xcor()) == round(self.snake_parts[0].xcor()) \
+                and round(tail_part.ycor()) == round(self.snake_parts[0].ycor()):
                 return True
         return False
 
@@ -93,8 +94,13 @@ class Snake:
             part.color("gray")
 
     def snake_status(self) -> str:
-        return f"off screen:{self.snake_off_screen()} bites tail:{self.snake_bites_tail()}"
+        return f"off screen:{self.snake_off_screen()} bites tail:{self.snake_bites_tail}"
 
     def __str__(self):
         result = f"snake at {self.snake_head_pos()} len{len(self.snake_parts)}"
+        for idx in range(len(self.snake_parts)):
+            if idx % 5 == 0:
+                result += "\n"
+            part = self.snake_parts[idx]
+            result += f"{idx}:{part.pos()} "
         return result
